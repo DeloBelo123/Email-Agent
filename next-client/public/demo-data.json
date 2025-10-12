@@ -1,0 +1,84 @@
+{
+  "emails": [
+    {
+      "id": "1",
+      "from": "Max Mustermann",
+      "subject": "Besichtigungstermin gewünscht - Wohnung Berlin Mitte",
+      "snippet": "Hallo, ich interessiere mich für die 3-Zimmer-Wohnung in Berlin Mitte. Könnten wir einen Besichtigungstermin vereinbaren?",
+      "category": "Leads",
+      "receivedAt": "Heute, 14:30",
+      "urgent": true,
+      "fullBody": "Sehr geehrte Damen und Herren,\n\nich habe Ihre Anzeige für die 3-Zimmer-Wohnung in Berlin Mitte gesehen und bin sehr interessiert. Die Wohnung scheint genau das zu sein, was ich suche.\n\nKönnten wir einen Besichtigungstermin vereinbaren? Ich wäre flexibel in den nächsten Tagen verfügbar.\n\nÜber eine schnelle Rückmeldung würde ich mich sehr freuen.\n\nMit freundlichen Grüßen\nMax Mustermann\nTel: 0171-1234567"
+    },
+    {
+      "id": "2",
+      "from": "ImmobilienScout24",
+      "subject": "Neue Anfrage für Wohnung - Maria Weber",
+      "snippet": "Neue Interessentin für Ihre 2-Zimmer-Wohnung in Kreuzberg. Kontaktdaten in der Nachricht.",
+      "category": "Portal",
+      "receivedAt": "Heute, 13:15",
+      "urgent": false,
+      "fullBody": "Hallo,\n\nich habe Ihre Anzeige für die 2-Zimmer-Wohnung in Kreuzberg gesehen und bin interessiert. Könnten wir einen Besichtigungstermin vereinbaren?\n\nMeine Kontaktdaten:\nMaria Weber\nE-Mail: maria.weber@email.de\nTelefon: 030-12345678\n\nIch wäre am Wochenende verfügbar.\n\nVielen Dank!\n\nMit freundlichen Grüßen\nMaria Weber"
+    },
+    {
+      "id": "3",
+      "from": "Fotograf Schmidt",
+      "subject": "Termin für Maklerfotos - Villa am See",
+      "snippet": "Hallo, ich würde gerne einen Termin für die Fotoaufnahmen der Villa am See vereinbaren.",
+      "category": "Cooperations",
+      "receivedAt": "Gestern, 16:45",
+      "urgent": false,
+      "fullBody": "Hallo,\n\nich hoffe, Sie hatten ein schönes Wochenende. Ich würde gerne einen Termin für die Fotoaufnahmen der Villa am See vereinbaren.\n\nKönnten wir uns auf nächste Woche Mittwoch, 14:00 Uhr einigen? Das Wetter soll gut werden und das Licht perfekt für die Außenaufnahmen.\n\nBitte lassen Sie mich wissen, ob der Termin passt.\n\nMit freundlichen Grüßen\nFotograf Schmidt\nTel: 0172-9876543"
+    },
+    {
+      "id": "4",
+      "from": "Maria Weber",
+      "subject": "Nachfrage zu Kaufpreis - Reihenhaus Spandau",
+      "snippet": "Hallo, ich habe eine Frage zum Kaufpreis des Reihenhauses in Spandau. Ist noch Verhandlungsspielraum?",
+      "category": "Customers",
+      "receivedAt": "Gestern, 11:20",
+      "urgent": true,
+      "fullBody": "Hallo,\n\nich habe mir das Reihenhaus in Spandau nochmal angeschaut und bin nach wie vor interessiert. Allerdings habe ich eine Frage zum Kaufpreis.\n\nIst da noch Verhandlungsspielraum? Ich habe gehört, dass ähnliche Objekte in der Gegend für weniger verkauft wurden.\n\nAußerdem würde ich gerne wissen, wann das Haus bezugsfertig ist und ob alle Renovierungsarbeiten abgeschlossen sind.\n\nÜber eine Rückmeldung würde ich mich freuen.\n\nMit freundlichen Grüßen\nMaria Weber"
+    },
+    {
+      "id": "5",
+      "from": "Notar Dr. Müller",
+      "subject": "Terminvereinbarung Kaufvertrag - Villa am See",
+      "snippet": "Sehr geehrte Damen und Herren, ich schlage vor, den Termin für den Kaufvertrag der Villa am See zu vereinbaren.",
+      "category": "Government",
+      "receivedAt": "Montag, 09:30",
+      "urgent": false,
+      "fullBody": "Sehr geehrte Damen und Herren,\n\nbezüglich des Kaufvertrags für die Villa am See möchte ich vorschlagen, den Termin für nächsten Freitag, 10:00 Uhr zu vereinbaren.\n\nBitte bringen Sie folgende Unterlagen mit:\n- Personalausweis\n- Finanzierungsbestätigung der Bank\n- Grundbuchauszug\n- Energieausweis\n\nFalls der Termin nicht passt, lassen Sie es mich bitte wissen.\n\nMit freundlichen Grüßen\nDr. Müller\nNotar"
+    },
+    {
+      "id": "6",
+      "from": "Herr Schmidt",
+      "subject": "Vermietung meiner Eigentumswohnung",
+      "snippet": "Hallo, ich möchte meine Eigentumswohnung in Charlottenburg vermieten lassen. Können Sie mir helfen?",
+      "category": "Landlord",
+      "receivedAt": "Sonntag, 20:15",
+      "urgent": false,
+      "fullBody": "Sehr geehrte Damen und Herren,\n\nich besitze eine 2-Zimmer-Eigentumswohnung in Charlottenburg und möchte diese gerne vermieten lassen.\n\nDie Wohnung ist 65 qm groß, hat eine moderne Einbauküche und einen Balkon. Sie liegt im 3. Stock eines Altbaus.\n\nKönnen Sie mir bei der Vermietung helfen? Ich wäre an einer langfristigen Vermietung interessiert.\n\nÜber ein Gespräch würde ich mich freuen.\n\nMit freundlichen Grüßen\nHerr Schmidt\nTel: 030-98765432"
+    },
+    {
+      "id": "7",
+      "from": "Immobilien Newsletter",
+      "subject": "Wöchentlicher Marktbericht - Berlin",
+      "snippet": "Ihr wöchentlicher Immobilien-Marktbericht für Berlin ist da. Preisentwicklung, neue Gesetze und Tipps.",
+      "category": "Spam",
+      "receivedAt": "Freitag, 08:00",
+      "urgent": false,
+      "fullBody": "Liebe Immobilien-Interessenten,\n\nhier ist Ihr wöchentlicher Marktbericht für Berlin:\n\n- Durchschnittspreise gestiegen um 2,3%\n- Neue Mietpreisbremse-Verordnung\n- Tipps für Immobilieninvestitionen\n\nLesen Sie mehr in unserem Newsletter...\n\nMit freundlichen Grüßen\nIhr Immobilien-Team"
+    },
+    {
+      "id": "8",
+      "from": "Handwerker Meier",
+      "subject": "Kostenvoranschlag Renovierung",
+      "snippet": "Hier ist der Kostenvoranschlag für die Renovierungsarbeiten in der Wohnung Kreuzberg.",
+      "category": "Cooperations",
+      "receivedAt": "Donnerstag, 15:30",
+      "urgent": false,
+      "fullBody": "Hallo,\n\nhier ist der Kostenvoranschlag für die Renovierungsarbeiten in der Wohnung Kreuzberg:\n\n- Malerarbeiten: 1.200 €\n- Boden verlegen: 800 €\n- Küche einbauen: 2.500 €\n- Badezimmer renovieren: 3.000 €\n\nGesamtkosten: 7.500 €\n\nDer Kostenvoranschlag ist 30 Tage gültig. Bei Fragen stehe ich gerne zur Verfügung.\n\nMit freundlichen Grüßen\nHandwerker Meier\nTel: 0173-1234567"
+    }
+  ]
+}

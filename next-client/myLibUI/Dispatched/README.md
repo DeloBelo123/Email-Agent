@@ -1,0 +1,1 @@
+hier sind die dinge die entweder buggy, nicht nutzbar oder veraltet und nicht mehr zu gebrauchen sind

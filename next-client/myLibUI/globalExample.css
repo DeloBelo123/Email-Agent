@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+:root{
+  --myBlue:#003049;
+  --myRed:#D62828;
+  --myOrange:#F77F00;
+  --myYellow:#FCBF49;
+  --myBanana:#EAE2B7;
+}
+/* hintergrund farben */
+@layer utilities {
+  .bgBlue{
+    background-color:var(--myBlue);
+  }
+  .bgRed{
+    background-color:var(--myRed);
+  }
+  .bgOrange{
+    background-color:var(--myOrange);
+  }
+  .bgYellow{
+    background-color:var(--myYellow);
+  }
+  .bgBanana{
+    background-color:var(--myBanana);
+  }
+  .bgGradient{
+    background-image: linear-gradient(to bottom right, var(--myOrange), var(--myRed));
+  }
+}
+
+/* Text farben */
+@layer utilities {
+  .textBlue{
+    color:var(--myBlue);
+  }
+  .textRed{
+    color:var(--myRed);
+  }
+  .textOrange{
+    color:var(--myOrange);
+  }
+  .textYellow{
+    color:var(--myYellow);
+  }
+  .textBanana{
+    color:var(--myBanana);
+  }
+  .textGradient{
+    background-image: linear-gradient(to right, var(--myOrange), var(--myRed));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent
+  }
+}
+
+/* Bilder */
+
+.myBild {
+  background-image: url("/wellen-top.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  z-index: 0; 
+  position: relative;
+}
+.myBild2{
+  background-image: url("/shopping.avif");
+  background-size: cover;
+}
+.bildAnima{
+  animation: anima 0.5s ease-in-out 2 reverse;
+  animation-delay: 1s;
+}
+
+.cut{
+  clip-path: circle(35% at 50% 50%);
+}
+
+@keyframes anima {
+  0%{
+    transform: rotate(0deg);
+  }
+  50%{
+    transform: rotate(30deg);
+  }
+  100%{
+    transform: rotate(0deg);
+  }
+}
+
+
