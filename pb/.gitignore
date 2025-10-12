@@ -1,0 +1,7 @@
+
+.env*
+/test_space
+/graphs
+__pycache__/
+*.py[cod]
+supabase_tables.py
