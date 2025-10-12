@@ -1,7 +1,7 @@
 from pb.agent_modules.fastapi_config import *
 from pb.agent_modules.my_agents import *
 from pb.tools.file_functions import read_file
-from readEmail import AccessObjekt
+from NewreadEmail import AccessObjekt
 from redis import Redis
 from celery import Celery
 
