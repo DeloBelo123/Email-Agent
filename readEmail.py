@@ -6,10 +6,15 @@ from pb.tools.file_functions import read_file
 from pb.CRM.OnOffice.config import CalendarEntryParameters,update_calendar_tool
 from pb.supabase_tables import mail_tabelle
 from typing import TypedDict as TD
+from enum import StrEnum
 from celery import Celery
 from redis import Redis
 import crontab
 
+class SubscriptionTier(StrEnum):
+    STARTER = "starter"
+    ADVANCED = "advanced"
+    PREMIUM = "premium"
 
 class User(BaseModel):
     id:str
@@ -18,11 +23,20 @@ class AccessObjekt(BaseModel):
     google_access_token:str
     google_refresh_token:Optional[str] = None
     user:User
-    extraData:bool
 
 router = APIRouter()
 redis = Redis(host='localhost', port=6379, db=0)
 celery = Celery("email_tasks",broker="redis://localhost:6379/0",backend="redis://localhost:6379/0")
+
+premium_user_tokens:List[AccessObjekt] = []
+
+celery.conf.beat_schedule = {
+    'process-emails-every-5-minutes': {
+        'task': 'readEmail3.process_offline_users',
+        'schedule': crontab(minute='*/20'),
+        'args':()
+    },
+}
 
 on_office_key = os.getenv("ON_OFFICE_API_KEY")
 on_office_secret = os.getenv("ON_OFFICE_SECRET_KEY")
@@ -228,7 +242,7 @@ def get_mail_ids(access_object: AccessObjekt, max_results: int = 20) -> list[str
         logging.error(f"Fehler beim Abrufen der Mail-IDs: {e}")
         return []
 
-@celery.task(autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
+@celery.task  
 def AI_mail_updating(tokens: AccessObjekt):
     
     mail_tabelle_ids = mail_tabelle.select(columns=["unique_mail_id"])
@@ -291,6 +305,21 @@ def AI_mail_updating(tokens: AccessObjekt):
                 "spam_unwichtiges": []
             }
         }
+
+@celery.task
+def process_offline_users():
+    premium_users = mail_tabelle.select(
+        columns=["user_id"],
+        where=[{"column":"Abo","is":SubscriptionTier.PREMIUM.value}]
+    )
+    premium_users_ids = [user["user_id"] for user in premium_users]
+    for premium_user_id in premium_users_ids:
+        user_tokens_json = redis.get(f"premium_user_{premium_user_id}")
+        if user_tokens_json:
+            user_tokens = AccessObjekt.model_validate_json(user_tokens_json)
+            AI_mail_updating.delay(user_tokens)
+        else:
+            logging.warning(f"No tokens found for premium user id: {premium_user_id}")
 
 class TerminInvokeSchema(TD):
     from_:str
@@ -373,22 +402,15 @@ termin_planer.add_context([read_file("termin_planer_rag.txt")])
 
 @router.post("/read_emails/test3/version3")
 def get_front_ends_AccessObjekt(tokens:AccessObjekt):
-    online = tokens.extraData
-    user_id = tokens.user.id
-
-    celery.conf.beat_schedule = {
-    'process-emails-every-5-minutes': {
-        'task': 'readEmail3.AI_mail_updating',
-        'schedule': crontab(minute='*/20'),
-        'args':(tokens)
-    },
-}
+    premium_users = mail_tabelle.select(
+        columns=["user_id"],
+        where=[{"column":"Abo","is":SubscriptionTier.PREMIUM.value}]
+    )
+    for premium_user in premium_users:
+        if tokens.user.id == premium_user["user_id"]:
+            logging.warning(f"der user {tokens.user.id} ist premium und wurde der liste hinzugefügt")
+            redis.set(f"premium_user_{tokens.user.id}",tokens.model_dump_json())
     
-    if online:
-        logging.info(f"user {user_id} ist online, mails werden direkt aktualisiert")
-        AI_mail_updating.apply(args=[tokens]).get()
-        return {"status": 210, "message": "Mails wurden direkt aktualisiert"}
-    else:
-        logging.info(f"user {user_id} ist offline, starte background task")
-        AI_mail_updating.delay(tokens)
-        return {"status": 211, "message": "Background task started"}
+    respo = AI_mail_updating(tokens)
+    return respo
+    
