@@ -8,9 +8,6 @@ import { useReply } from "../ReplyContext"
 import { motion, AnimatePresence } from "framer-motion"
 import NotLoggedInScreen from "../../components/auth/NotLoggedInScreen"
 import { makeDummyMails } from "./DummyData"
-import useOnlineStatus from "../../../myLibUI/Hooks/useOnlineStatus"
-import useOnlineListener from "../../../myLibUI/Hooks/useOnlineListener"
-import useSubscription from "@/hooks/useSubscription"
 
 export function Mails({category,dummyTest = true}:{category: MailCategories, dummyTest?: boolean}){
     const [mails, setMails] = useState<any | undefined>()
@@ -18,8 +15,6 @@ export function Mails({category,dummyTest = true}:{category: MailCategories, dum
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
     const [expandedMails, setExpandedMails] = useState<Set<string>>(new Set())
     const { setReplyData } = useReply()
-    const isOnline = useOnlineStatus()
-    const { subscription, canUseFeature, getUsagePercentage } = useSubscription()
 
     const dummyMails = makeDummyMails(category)
     const getCategoryDisplayName = (category: string) => {
@@ -38,7 +33,6 @@ export function Mails({category,dummyTest = true}:{category: MailCategories, dum
         mutationFn: async () => {
             return await sendSession<PythonResponse>({
                 toBackend:"http://localhost:8000/read_emails/test3/version3",
-                extraData:isOnline
             })
         },  
         onSuccess: async (result) => {
@@ -125,14 +119,6 @@ export function Mails({category,dummyTest = true}:{category: MailCategories, dum
         }
         checkAuthAndLoadData()
     },[category])
-
-    useOnlineListener(() => {
-        console.log("Online status changed, checking if we need to update...")
-        // Nur bei Status-Änderung, nicht bei jedem Mount
-        if (isLoggedIn) {
-            mutate()
-        }
-    })
 
     // Show login screen if user is not logged in
     if (!isLoggedIn) {
