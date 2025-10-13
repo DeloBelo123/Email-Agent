@@ -1,7 +1,7 @@
 "use client"
 import { useContext } from "react"
 import { MailCategories } from "./Types"
-import { Mails } from "./OldMails"
+import { Mails } from "./Mails"
 import ReadSideBar from "./ReadSideBar"
 import { CategorieContext } from "./CategorieContext"
 import OverView from "./OverView"
