@@ -4,6 +4,9 @@ import axios from "axios"
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!
 
+if (!supabaseUrl) throw new Error("No NEXT_PUBLIC_SUPABASE_URL in env")
+if (!supabaseAnonKey) throw new Error("No NEXT_PUBLIC_SUPABASE_KEY in env")
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey) // bekommt die daten für auth vom browser-cookies storage
 
 // Supabase Class für vereinfachung der Nutzung
