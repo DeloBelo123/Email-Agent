@@ -12,3 +12,7 @@ von leads tut weil die ja schnell kalt werden, dann kannst du sowas wie if email
 
  - wie du testen kannst das das klappt: mach so das im ganzen 'offline - modus' dinge gelogged werden und packe das in eine file, so kannst du sehen was im off
  modus passiert. Lern vorher github und mach den off-modus in einer branch bro.
+
+ # GANZ WICHTIG: FÜGE BEI REDIS DEN CONFIG EIN, DAS DATEN PERSISSTEN ÜBER SERVER NEUSTART BLEIBEN!!!
+ # GANZ WICHTIG: BAUE REFRESH-TOKEN LOGIK REIN
+ # GANZ WICHTIG: ÜBERARBEITE DIE AUTO-RESPONSE LOGIK, SO DAS BEI SCHON BEANTWORTETEN EMAILS KEINE GESENDET WIRD, UND    WENN DER USER ON IST KEINE GESENDEN WIRD

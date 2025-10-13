@@ -5,34 +5,19 @@ from pb.agent_modules.fastapi_config import *
 from pb.tools.file_functions import read_file
 from pb.CRM.OnOffice.config import CalendarEntryParameters,update_calendar_tool
 from pb.supabase_tables import mail_tabelle
-from typing import TypedDict as TD
-from enum import StrEnum
+from dataModels import AccessObjekt, OutPutSchema, SubscriptionTier
+from projektAgents import termin_planer,email_writer
 from celery import Celery
 from redis import Redis
 import crontab
-
-class SubscriptionTier(StrEnum):
-    STARTER = "starter"
-    ADVANCED = "advanced"
-    PREMIUM = "premium"
-
-class User(BaseModel):
-    id:str
-    email:str
-class AccessObjekt(BaseModel):
-    google_access_token:str
-    google_refresh_token:Optional[str] = None
-    user:User
 
 router = APIRouter()
 redis = Redis(host='localhost', port=6379, db=0)
 celery = Celery("email_tasks",broker="redis://localhost:6379/0",backend="redis://localhost:6379/0")
 
-premium_user_tokens:List[AccessObjekt] = []
-
 celery.conf.beat_schedule = {
-    'process-emails-every-5-minutes': {
-        'task': 'readEmail3.process_offline_users',
+    'process-emails-every-20-minutes': {
+        'task': 'readEmail.process_offline_users',
         'schedule': crontab(minute='*/20'),
         'args':()
     },
@@ -40,24 +25,6 @@ celery.conf.beat_schedule = {
 
 on_office_key = os.getenv("ON_OFFICE_API_KEY")
 on_office_secret = os.getenv("ON_OFFICE_SECRET_KEY")
-
-class EmailHeader(BaseModel): 
-    from_:str = Field(description="sagst von wem die email geschickt wurde")
-    subject:str = Field(description=" sagst das thema der geschickten email (steht bei mails in der 'subject' Zeile)")
-class Email(BaseModel):
-    mail_header:EmailHeader = Field(description="das ist der header der Email, hier sind die daten 'from' also von wem die mail kam und 'subject', also das oberthema der mail")
-    summary:str = Field(description=" eine umfangreiche aber nicht zu lange zusammenfassung der Mail, die für ein guten überblick des inhaltes sorgt")
-    email_id:str = Field(description="das ist die unique ID von jeder email, du weist ja das jede mail seine eigene ID hat bei gmail")
-    email_owner_id:str = Field(description="das ist die ID des besitzers der mails, also an den die mails gehen, alle mails sind sozusagen mails dieser ID")
-    mail_category:str = Field(description=" hier schreibst du schreibst du auf, zu welcher kategorie die email eingeteilt hast, die kategorien müssen der in der du alle mails einteilst überein stimmen")
-    contains_appointment:bool = Field(description="setze diese auf True, wenn diese Email auf eine terminanfrage oder terminbesprechung hinweist")
-class OutPutSchema(BaseModel):
-    neue_interessenten: List[Email] = Field(description=("Alle E-Mails mit Anfragen zu Besichtigungen, Kauf- oder Mietinteresse. Diese stammen oft von Immobilienportalen (z. B. Immobilienscout, Immonet) oder direkt von Kunden über die Website. Diese Mails müssen sofort gesehen werden und haben höchste Priorität."))
-    bestehende_kunden: List[Email] = Field(description=("E-Mails von Personen, die bereits eine Immobilie besichtigt haben oder kurz vor einem Vertragsabschluss stehen. Enthalten oft wichtige Fragen, Dokumentenanforderungen und Preisverhandlungen."))
-    eigentuemer_verkaufsinteressenten: List[Email] = Field(description=("E-Mails von Eigentümern oder Verkaufsinteressenten, die ihre Immobilie verkaufen oder vermieten möchten. Diese sind sehr lukrativ und müssen schnell beantwortet werden, um den Auftrag nicht an Konkurrenten zu verlieren."))
-    behoerdliche_rechtliche_themen: List[Email] = Field(description=("E-Mails von Behörden, Notaren, Banken oder Versicherungen. Diese enthalten oft zeitkritische Termine, Anfragen und Dokumentenanforderungen."))
-    marketing_kooperationen: List[Email] = Field(description=("Angebote und Anfragen bezüglich Marketing, Fotografen, Handwerkern, Home-Staging-Firmen und anderen Kooperationspartnern im Immobilienbereich."))
-    spam_unwichtiges: List[Email] = Field(description=("Newsletter, Werbemails, Spam und andere irrelevante oder unerwünschte Nachrichten ohne Bedeutung für das Geschäft."))
 
 @output_structured_by_architect(OutPutSchema)
 def read_google_mails(access_object:AccessObjekt,newest_mail_ids_to_readout:list[str], max_results:int=17):
@@ -251,6 +218,12 @@ def AI_mail_updating(tokens: AccessObjekt):
     newest_mail_ids = list(set(all_mail_ids) - set(real_mail_tabelle_ids))  
     logging.warning(f"die neusten mail ids: {newest_mail_ids}")
     logging.error(tokens)
+    
+    premium_users = mail_tabelle.select(
+        columns=["user_id"],
+        where=[{"column":"Abo","is_":SubscriptionTier.PREMIUM.value}]
+    )
+    premium_users_id = [user["user_id"] for user in premium_users]
     try:
         sorted_emails = read_google_mails(
             access_object=tokens,
@@ -275,7 +248,7 @@ def AI_mail_updating(tokens: AccessObjekt):
                             if termin_mail_body_result:
                                 termin_mail_body = termin_mail_body_result[0]["mail_body"]
                             else:
-                                logging.error(f"No mail body found for email id: {email['email_id']}")
+                                logging.error(f"(from termin) No mail body found for email id: {email['email_id']}")
                             done_status = termin_planer.invoke({
                                 "content":termin_mail_body,
                                 "from_":email["mail_header"]["from_"],
@@ -283,6 +256,46 @@ def AI_mail_updating(tokens: AccessObjekt):
                             })
                             if not done_status:
                                 raise OneCallAgentError("Error! Terminplaner hat die aufgabe aus irgendeinem Grund nicht erledigt, Debuge für nähere info bro")
+                        
+                        if email["email_owner_id"] in premium_users_id and email["mail_category"] == "neue_interessenten":
+                            importang_mail_body_result = mail_tabelle.select(
+                                columns=["mail_body"],
+                                where=[{"column":"unique_mail_id","is_":email["email_id"]}]
+                            )
+                            if importang_mail_body_result:
+                                important_mail_body = importang_mail_body_result[0]["mail_body"]
+                            else:
+                                logging.error(f"(from auto-respo) No mail body found for email id: {email['email_id']}")
+                                continue
+                            
+                            # ✅ Generiere Auto-Response Email
+                            auto_generated_email = email_writer.invoke({
+                                "input":f"generiere eine professionelle Antwort zu dieser Mail eines potenziellen Kundens:{[important_mail_body,email["mail_header"]]}"
+                            })
+                            
+                            # ✅ Korrekte API-Call mit vollständiger URL und korrekter Struktur
+                            try:
+                                response = httpx.post(
+                                    url="http://localhost:8000/auto_send_email/test3",
+                                    json={
+                                        "google_access_token": tokens.google_access_token,
+                                        "google_refresh_token": tokens.google_refresh_token,
+                                        "user": tokens.user.model_dump(),
+                                        "email": {
+                                            "from_": auto_generated_email.from_,
+                                            "to": auto_generated_email.to,
+                                            "subject": auto_generated_email.subject,
+                                            "content": auto_generated_email.content
+                                        }
+                                    }
+                                )
+                                if response.is_success:
+                                    logging.info(f"Auto-response scheduled for email {email['email_id']}")
+                                else:
+                                    logging.error(f"Failed to schedule auto-response: {response.status_code}")
+                            except Exception as e:
+                                logging.error(f"Error scheduling auto-response: {e}")
+                            
                             
                     except Exception as e:
                         logging.error(f"Error updating email id: {email['email_id']}: {e}")
@@ -310,7 +323,7 @@ def AI_mail_updating(tokens: AccessObjekt):
 def process_offline_users():
     premium_users = mail_tabelle.select(
         columns=["user_id"],
-        where=[{"column":"Abo","is":SubscriptionTier.PREMIUM.value}]
+        where=[{"column":"Abo","is_":SubscriptionTier.PREMIUM.value}]
     )
     premium_users_ids = [user["user_id"] for user in premium_users]
     for premium_user_id in premium_users_ids:
@@ -320,85 +333,6 @@ def process_offline_users():
             AI_mail_updating.delay(user_tokens)
         else:
             logging.warning(f"No tokens found for premium user id: {premium_user_id}")
-
-class TerminInvokeSchema(TD):
-    from_:str
-    subject:str
-    content:str
-termin_planer = OneCallAgent[TerminInvokeSchema,Done](
-    name="onOffice termin updater",
-    description="updatet den Termin kalender des kunden anhand der Emails, yanni ob in den mails was von temrin steht",
-    tools=[
-        AgentTool(
-            name="update_calendar_tool",
-            description="Erstellt einen Termin im onOffice Kalender des Kunden",
-            input_schema=CalendarEntryParameters,
-            func=update_calendar_tool
-        )
-    ],
-    output_structure=Done,
-    prompt=[
-        ("system", """
-            Du bist ein hochspezialisierter Termin-Extraktor für Immobilienmakler. Deine Aufgabe ist es, aus E-Mails präzise Termin-Informationen zu extrahieren und diese in den onOffice-Kalender einzutragen.
-
-            ## KRITISCHE REGELN:
-            1. **NUR echte Termine extrahieren** - keine vagen Andeutungen oder "vielleicht"
-            2. **Immer Datum UND Uhrzeit** - ohne beides = kein Termin
-            3. **Deutsche Zeitformate** - "15.10.2025 14:30" oder "morgen um 10 Uhr"
-            4. **Realistische Dauer** - Standard: 60 Minuten, Besichtigungen: 30-45 Min
-            5. **Klare Ortsangaben** - Adresse, Objekt-ID oder "Büro"
-
-            ## TERMIN-TYPEN (Immobilien):
-            - **Besichtigungstermine**: "Besichtigung", "Besuch", "Rundgang"
-            - **Beratungstermine**: "Beratung", "Gespräch", "Termin"
-            - **Vertragsabschlüsse**: "Unterschrift", "Vertrag", "Notar"
-            - **Behördentermine**: "Amt", "Behörde", "Genehmigung"
-
-            ## ZEIT-ERKENNUNG:
-            - **Explizit**: "15.10.2025 um 14:30", "morgen 10 Uhr"
-            - **Relativ**: "nächste Woche Dienstag", "übermorgen"
-            - **Wochentage**: "Montag um 15 Uhr" (nächster Montag)
-            - **Zeiträume**: "zwischen 14-16 Uhr" → 14:00-15:00
-
-            ## ORT-ERKENNUNG:
-            - **Vollständige Adressen**: "Musterstraße 123, 12345 Berlin"
-            - **Objekt-Referenzen**: "Objekt XY", "Immobilie ABC"
-            - **Büro/Standort**: "unser Büro", "Standort Mitte"
-
-            ## FALLBACK-STRATEGIEN:
-            - **Unklare Zeit**: "14:00" (Standard)
-            - **Unklarer Ort**: "Büro" oder "zu vereinbaren"
-            - **Unklare Dauer**: "60 Minuten"
-
-            ## QUALITÄTSKONTROLLE:
-            - Prüfe JEDEN extrahierten Wert auf Plausibilität
-            - Bei Unsicherheit: NICHT erstellen
-            - Logge alle Entscheidungen für Debugging
-
-            ## OUTPUT-FORMAT:
-            - subject: Kurz und prägnant (max 100 Zeichen)
-            - start: "YYYY-MM-DD HH:MM:SS"
-            - end: "YYYY-MM-DD HH:MM:SS" (start + Dauer)
-            - location: Präzise Ortsangabe
-            - description: Email-Inhalt als Kontext
-            - reminder: "15" (15 Minuten vorher)
-
-            Du bist ein Experte für deutsche Immobilien-Termine. Sei präzise, konservativ und zuverlässig.
-                        """),
-                        ("human", """
-            Analysiere diese E-Mail auf Termin-Informationen:
-
-            E-Mail von: {from_}
-            Betreff: {subject}
-            Inhalt: {content}
-
-            Extrahiere ALLE Termine und erstelle für jeden einen Kalendereintrag. Wenn kein klarer Termin erkennbar ist, erstelle KEINEN Eintrag.
-
-            WICHTIG: Prüfe jeden extrahierten Wert auf Plausibilität und Vollständigkeit!
-        """)
-    ]
-)
-termin_planer.add_context([read_file("termin_planer_rag.txt")])
 
 @router.post("/read_emails/test3/version3")
 def get_front_ends_AccessObjekt(tokens:AccessObjekt):
