@@ -21,4 +21,3 @@ export interface UserTable {
 export const UserTabelle = new SupabaseTable<UserTable>("users")
 
 
-

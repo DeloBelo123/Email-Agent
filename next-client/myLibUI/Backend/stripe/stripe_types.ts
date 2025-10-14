@@ -1,8 +1,10 @@
-import Stripe from "stripe"
+import { SupabaseTable } from "../supabase/supabase"
 
-export interface StripeProps {
-    products: object,
-    stripeInstance?: Stripe
+export interface StripeProps<T> {
+    products?: object,
+    secret_key: string,
+    public_key: string,
+    dataTable: SupabaseTable<T>
 }
 
 export interface CreateCheckoutSessionProps {
@@ -12,6 +14,7 @@ export interface CreateCheckoutSessionProps {
     customerEmail?: string,
     clientReferenceId?: string,
     customerId?: string
+    products?:object
 }
 
 export interface CreateUserProps {

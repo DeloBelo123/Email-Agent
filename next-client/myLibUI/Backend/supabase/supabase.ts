@@ -20,7 +20,7 @@ export class SupabaseTable<T> {
      * @param rows - die neuen Zeilen die du in die Tabelle einfügen möchtest, als Array von Objekten, wo jedes Objekt eine Zeile ist
      * @returns nichst, fügt eifach die neuen Zeilen in die Tabelle ein
      */
-    async insert({rows}:{rows:Array<Partial<T>>}){
+    async insert(rows:Array<Partial<T>>){
         const { data:insertedData, error } = await supabase
             .from(this.tableName)
             .insert(rows)
@@ -157,7 +157,7 @@ export async function sendSession<T>({toBackend,extraData}:sendSessionProps){
     }
 }
 
-interface OAuthProps{
+export interface OAuthProps{
     provider?:Provider 
     scopes?:Array<string> | undefined
     redirectTo:string
