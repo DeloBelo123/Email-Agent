@@ -8,8 +8,8 @@ import base64
 from email.message import EmailMessage
 
 router = APIRouter()
-redis = Redis(host='localhost', port=6380, db=0)
-celery = Celery("email_tasks",broker="redis://localhost:6380/0",backend="redis://localhost:6380/0")
+redis = Redis(host='localhost', port=6379, db=0)
+celery = Celery("email_tasks",broker="redis://localhost:6379/0",backend="redis://localhost:6379/0")
 
 class Req(AccessObjekt):
     email:EmailOutputSchema # der grund warum ich email diesem Typ gebe liegt daran weil ich im Frontend die von 'def make()' generierte mail, welches ja logisch auch diese struktur hat, zurück schicke an 'def send()' welches ich dann final abschicke
@@ -82,12 +82,11 @@ def auto_send(req:Req):
             args = [req, email.from_, email.to, email.subject, email.content],
             countdown = 1200  # 20 Minuten Delay
         )
+        redis.sadd(f"pending_auto_responses:{req.user.id}",respo.id)
         print(f"die Respo von 'send_mail' von 'auto_send': {respo}")
         return {"status": 202, "message": "Auto-response scheduled", "task_id": respo.id}
     except Exception as e:
         raise(f"Error beim auto email senden: Exception: {e.__class__.__name__} | Error: {e}")
 
-@router.post("/handle_user_status/test3")
-def handle_user_status():
-    pass
+
         

@@ -4,7 +4,7 @@ from pb.agent_modules.langchain_imports import *
 from pb.agent_modules.fastapi_config import *
 from pb.tools.file_functions import read_file
 from pb.CRM.OnOffice.config import CalendarEntryParameters,update_calendar_tool
-from pb.supabase_tables import mail_tabelle
+from pb.supabase_tables import mail_tabelle,user_tabelle
 from dataModels import AccessObjekt, OutPutSchema, SubscriptionTier
 from projektAgents import termin_planer,email_writer
 from celery import Celery
@@ -211,7 +211,8 @@ def get_mail_ids(access_object: AccessObjekt, max_results: int = 20) -> list[str
 
 @celery.task  
 def AI_mail_updating(tokens: AccessObjekt):
-    
+    user_id = tokens.user.id
+
     mail_tabelle_ids = mail_tabelle.select(columns=["unique_mail_id"])
     real_mail_tabelle_ids = [row["unique_mail_id"] for row in mail_tabelle_ids]
     all_mail_ids = get_mail_ids(tokens,max_results=18)
@@ -258,6 +259,17 @@ def AI_mail_updating(tokens: AccessObjekt):
                                 raise OneCallAgentError("Error! Terminplaner hat die aufgabe aus irgendeinem Grund nicht erledigt, Debuge für nähere info bro")
                         
                         if email["email_owner_id"] in premium_users_id and email["mail_category"] == "neue_interessenten":
+                            # Online-Status checken
+                            result = user_tabelle.select(
+                                columns=["OnOff"],
+                                where=[{"column":"user_id","is_":email["email_owner_id"]}]
+                            )
+                            user_onoff_status = result[0]["OnOff"] if result and len(result) > 0 else "off"
+                            
+                            if user_onoff_status == "on":
+                                logging.info(f"User {email['email_owner_id']} ONLINE - skip Auto-Response")
+                                continue
+                            
                             importang_mail_body_result = mail_tabelle.select(
                                 columns=["mail_body"],
                                 where=[{"column":"unique_mail_id","is_":email["email_id"]}]
@@ -268,32 +280,35 @@ def AI_mail_updating(tokens: AccessObjekt):
                                 logging.error(f"(from auto-respo) No mail body found for email id: {email['email_id']}")
                                 continue
                             
-                            auto_generated_email = email_writer.invoke({
-                                "input":f"generiere eine professionelle Antwort zu dieser Mail eines potenziellen Kundens:{[important_mail_body,email["mail_header"]]}"
-                            })
-                            
-                            try:
-                                response = httpx.post(
-                                    url="http://localhost:8000/auto_send_email/test3",
-                                    json={
-                                        "google_access_token": tokens.google_access_token,
-                                        "google_refresh_token": tokens.google_refresh_token,
-                                        "user": tokens.user.model_dump(),
-                                        "email": {
-                                            "from_": auto_generated_email.from_,
-                                            "to": auto_generated_email.to,
-                                            "subject": auto_generated_email.subject,
-                                            "content": auto_generated_email.content
+                            if user_onoff_status == "on":
+                                continue
+                            else:    
+                                auto_generated_email = email_writer.invoke({
+                                    "input":f"generiere eine professionelle Antwort zu dieser Mail eines potenziellen Kundens:{[important_mail_body,email["mail_header"]]}"
+                                })
+                                
+                                try:
+                                    response = httpx.post(
+                                        url="http://localhost:8000/auto_send_email/test3",
+                                        json={
+                                            "google_access_token": tokens.google_access_token,
+                                            "google_refresh_token": tokens.google_refresh_token,
+                                            "user": tokens.user.model_dump(),
+                                            "email": {
+                                                "from_": auto_generated_email.from_,
+                                                "to": auto_generated_email.to,
+                                                "subject": auto_generated_email.subject,
+                                                "content": auto_generated_email.content
+                                            }
                                         }
-                                    }
-                                )
-                                if response.is_success:
-                                    logging.info(f"Auto-response scheduled for email {email['email_id']}")
-                                else:
-                                    logging.error(f"Failed to schedule auto-response: {response.status_code}")
-                            except Exception as e:
-                                logging.error(f"Error scheduling auto-response: {e}")
-                            
+                                    )
+                                    if response.is_success:
+                                        logging.info(f"Auto-response scheduled for email {email['email_id']}")
+                                    else:
+                                        logging.error(f"Failed to schedule auto-response: {response.status_code}")
+                                except Exception as e:
+                                    logging.error(f"Error scheduling auto-response: {e}")
+                                
                             
                     except Exception as e:
                         logging.error(f"Error updating email id: {email['email_id']}: {e}")
