@@ -63,7 +63,7 @@ export class SupabaseTable<T> {
         return data;
     }
     /**
-     * @param updated_cols - die spalten die du aktualisieren möchtest, als Objekt wo der key der Spaltenname ist und der value der neue Wert
+     * @param updated - die spalten die du aktualisieren möchtest, als Objekt wo der key der Spaltenname ist und der value der neue Wert
      * @param where - die Filter die genau sagen welche Zeile sich aktualisieren soll, sonst wird jede Zeile aktualisiert!!!
      * @returns die geupdateten Zeilen, also die Zeilen die du aktualisiert hast
      */
