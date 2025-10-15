@@ -1,28 +1,39 @@
 "use client"
-import { useEffect, useRef } from "react"
-/**
- * dieser Hook verfolgt den online status des nutzers und führt eine function bei der änderung aus
- * @param onStatusChange das ist eine callback function die bei jeder änderung des online status ausgeführt wird, z.b. um daten zu syncen
- * @returns None, ist ein reiner side-effect hook
- */
-export default function useOnlineListener(onStatusChange:(...args: any[]) => void){
-    const isInitialMount = useRef(true)
-    useEffect(()=>{
-        const handleStatusChange = () => {
-            if (!isInitialMount.current) {
-                console.log("Online status changed:", navigator.onLine)
-                onStatusChange()
-            } else {
-                isInitialMount.current = false
-            }
-        }
+import { useEffect } from "react"
 
-        window.addEventListener('online', handleStatusChange);
-        window.addEventListener('offline', handleStatusChange);
+interface useOnlineListenerProps {
+  onOnline: (...args: any[]) => void
+  onOffline: (...args: any[]) => void
+}
 
-        return () => {
-            window.removeEventListener('online', handleStatusChange);
-            window.removeEventListener('offline', handleStatusChange);
-        }
-    },[onStatusChange])
+export default function useOnlineListener({onOnline, onOffline}: useOnlineListenerProps) {
+  
+  useEffect(() => {
+
+    const handleOnline = () => {
+      console.log("User came ONLINE")
+      onOnline()
+    }
+    
+    const handleOffline = () => {
+      console.log("User went OFFLINE")
+      onOffline()
+    }
+    
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    
+    if (navigator.onLine) {
+      console.log("Initial status: ONLINE")
+      onOnline()
+    } else {
+      console.log("Initial status: OFFLINE")
+      onOffline()
+    }
+    
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [onOnline, onOffline])
 }

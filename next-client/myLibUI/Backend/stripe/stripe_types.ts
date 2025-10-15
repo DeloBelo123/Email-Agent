@@ -36,5 +36,5 @@ export interface StripeSupabase {
     subscription:Subscription
 }
 
-export type tier = "starter" | "advanced" | "premium"
+export type Tier = "starter" | "advanced" | "premium"
 export type status = "active" | "canceled" | "past_due"

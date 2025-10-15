@@ -12,7 +12,7 @@ from redis import Redis
 import crontab
 
 router = APIRouter()
-redis = Redis(host='localhost', port=6379, db=0)
+redis = Redis(host='localhost', port=6379, db=0) #WICHTIG: merk dir korrekte server konfig damit über restarts hinweg data bleibt
 celery = Celery("email_tasks",broker="redis://localhost:6379/0",backend="redis://localhost:6379/0")
 
 celery.conf.beat_schedule = {
@@ -268,12 +268,10 @@ def AI_mail_updating(tokens: AccessObjekt):
                                 logging.error(f"(from auto-respo) No mail body found for email id: {email['email_id']}")
                                 continue
                             
-                            # ✅ Generiere Auto-Response Email
                             auto_generated_email = email_writer.invoke({
                                 "input":f"generiere eine professionelle Antwort zu dieser Mail eines potenziellen Kundens:{[important_mail_body,email["mail_header"]]}"
                             })
                             
-                            # ✅ Korrekte API-Call mit vollständiger URL und korrekter Struktur
                             try:
                                 response = httpx.post(
                                     url="http://localhost:8000/auto_send_email/test3",

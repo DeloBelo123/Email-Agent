@@ -132,7 +132,7 @@ export async function sendSession<T>({toBackend,extraData}:sendSessionProps){
                     id:data.session?.user.id,
                     email:data.session?.user.email
                 },
-                extraData:extraData
+                ...(extraData !== undefined && { extraData })
             }
         )
         return { data:backendData,status,session:data.session }

@@ -1,5 +1,6 @@
 import { UUID } from "crypto"
 import { SupabaseTable } from "./supabase"
+import { Tier } from "../stripe/stripe_types"
 
 export interface MailTable {
     unique_mail_id:string
@@ -16,8 +17,9 @@ export interface UserTable {
     user_id:UUID
     mail_inhaber_id:UUID
     user_mail:string 
-    user_context:string
+    Abo:Tier
+    OnOff: "on" | "off"
 }
-export const UserTabelle = new SupabaseTable<UserTable>("users")
+export const userTabelle = new SupabaseTable<UserTable>("users")
 
 

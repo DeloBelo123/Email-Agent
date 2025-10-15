@@ -1,4 +1,4 @@
-
+import { OnlineStatusManager } from "./StatusManager";
 import type { Metadata } from "next";
 import "./globals.css";
 import { CategorieContextProvider } from "./readMails/CategorieContext";
@@ -19,6 +19,7 @@ export default function RootLayout({children}: Readonly<{children: React.ReactNo
         <QueryContext>
           <CategorieContextProvider>
             <ReplyProvider>
+              <OnlineStatusManager />
               {children}
               <SettingsButton />
             </ReplyProvider>

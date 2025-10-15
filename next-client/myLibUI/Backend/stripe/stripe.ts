@@ -18,7 +18,7 @@ if (!stripePublicKey) throw new Error("No NEXT_PUBLIC_STRIPE_PUBLIC in env")
 if (!stripeSecretAPIKey) throw new Error("No STRIPE_SECRET_KEY in env")
 if (!stripeWebhookKey) throw new Error("No STRIPE_WEBHOOK_KEY in env")
 
-const stripe = new Stripe(stripeSecretAPIKey,{
+export const stripe = new Stripe(stripeSecretAPIKey,{
             apiVersion: "2025-09-30.clover",
             typescript: true
         })

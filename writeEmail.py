@@ -1,6 +1,5 @@
 from pb.agent_modules.fastapi_config import *
 from pb.agent_modules.my_agents import *
-from pb.tools.file_functions import read_file
 from dataModels import AccessObjekt
 from projektAgents import email_writer,UserInput,EmailOutputSchema
 from redis import Redis
@@ -87,4 +86,8 @@ def auto_send(req:Req):
         return {"status": 202, "message": "Auto-response scheduled", "task_id": respo.id}
     except Exception as e:
         raise(f"Error beim auto email senden: Exception: {e.__class__.__name__} | Error: {e}")
+
+@router.post("/handle_user_status/test3")
+def handle_user_status():
+    pass
         
