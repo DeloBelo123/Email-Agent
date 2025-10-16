@@ -11,11 +11,19 @@ export function OnlineStatusManager() {
   const handleOnline = useCallback(async () => {
     try {
       const { data: { user }, error:onlineError } = await supabase.auth.getUser()
-      if (onlineError) throw new Error("hahah, einfach error beim user kriegen in der OnlineStatusManager kompo")
+      if (onlineError) {
+        console.warn("User nicht authentifiziert - Online Status Update übersprungen")
+        return
+      }
+
+      if (!user?.id) {
+        console.warn("Keine User ID verfügbar - Online Status Update übersprungen")
+        return
+      }
 
       await userTabelle.update({
         update:{ OnOff:"on" },
-        where:[{column:"user_id",is:user?.id}]
+        where:[{column:"user_id",is:user.id}]
       })
       await sendSession({
         toBackend: "http://localhost:8000/handle_user_status/test3"
@@ -28,11 +36,19 @@ export function OnlineStatusManager() {
   const handleOffline = useCallback(async () => {
     try {
       const { data: { user }, error:offlineError } = await supabase.auth.getUser()
-      if (offlineError) throw new Error("hahah, einfach error beim user kriegen in der OnlineStatusManager kompo")
+      if (offlineError) {
+        console.warn("User nicht authentifiziert - Offline Status Update übersprungen")
+        return
+      }
+
+      if (!user?.id) {
+        console.warn("Keine User ID verfügbar - Offline Status Update übersprungen")
+        return
+      }
       
       await userTabelle.update({
         update:{ OnOff:"off" },
-        where:[{column:"user_id",is:user?.id}]
+        where:[{column:"user_id",is:user.id}]
       })
       await sendSession({
         toBackend: "http://localhost:8000/handle_user_status/test3"

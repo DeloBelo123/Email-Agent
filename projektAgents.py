@@ -78,7 +78,7 @@ termin_planer = OneCallAgent[TerminInvokeSchema,Done](
         """)
     ]
 )
-termin_planer.add_context([read_file("termin_planer_rag.txt")])
+#termin_planer.add_context([read_file("termin_planer_rag.txt")])
 
 
 class MetaData(BaseModel):
@@ -148,4 +148,4 @@ email_writer = LLMChain[BaseInvokeSchema,EmailOutputSchema](
         ],
         output_structure=EmailOutputSchema
     )
-email_writer.add_context([read_file("email_writer_rag.txt")])
+#email_writer.add_context([read_file("email_writer_rag.txt")])

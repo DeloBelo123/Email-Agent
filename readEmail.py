@@ -2,12 +2,13 @@
 from pb.agent_modules.my_agents import *
 from pb.agent_modules.langchain_imports import *
 from pb.agent_modules.fastapi_config import *
+from pb.tools.file_functions import add_to_file
 from pb.supabase_tables import mail_tabelle,user_tabelle
 from dataModels import AccessObjekt, OutPutSchema, SubscriptionTier
 from projektAgents import termin_planer,email_writer
 from celery import Celery
 from redis import Redis
-import crontab
+
 from serviceWorker import send_lead_notification
 
 router = APIRouter()
@@ -17,7 +18,7 @@ celery = Celery("email_tasks",broker="redis://localhost:6379/0",backend="redis:/
 celery.conf.beat_schedule = {
     'process-emails-every-20-minutes': {
         'task': 'readEmail.process_offline_users',
-        'schedule': crontab(minute='*/20'),
+        'schedule': 1200,
         'args':()
     },
 }
@@ -276,12 +277,13 @@ def AI_mail_updating(tokens: AccessObjekt):
                                 logging.info(f"User {email['email_owner_id']} ONLINE - skip Auto-Response")
                                 continue
                             
-                            importang_mail_body_result = mail_tabelle.select(
+                            important_mail_body_result = mail_tabelle.select(
                                 columns=["mail_body"],
                                 where=[{"column":"unique_mail_id","is_":email["email_id"]}]
                             )
-                            if importang_mail_body_result:
-                                important_mail_body = importang_mail_body_result[0]["mail_body"]
+                            if important_mail_body_result:
+                                important_mail_body = important_mail_body_result[0]["mail_body"]
+                                add_to_file("offlineLogs.txt",f"-mail body from offline reading: {important_mail_body}")
                             else:
                                 logging.error(f"(from auto-respo) No mail body found for email id: {email['email_id']}")
                                 continue
@@ -292,7 +294,7 @@ def AI_mail_updating(tokens: AccessObjekt):
                                 auto_generated_email = email_writer.invoke({
                                     "input":f"generiere eine professionelle Antwort zu dieser Mail eines potenziellen Kundens:{[important_mail_body,email["mail_header"]]}"
                                 })
-                                
+                                add_to_file("offlineLogs.txt",f"generated Email (from AI-mail-updating): {auto_generated_email}")
                                 try:
                                     response = httpx.post(
                                         url="http://localhost:8000/auto_send_email/test3",
@@ -353,7 +355,7 @@ def process_offline_users():
         else:
             logging.warning(f"No tokens found for premium user id: {premium_user_id}")
 
-@router.post("/read_emails/test3/version3")
+@router.post("/read_emails/test3")
 def get_front_ends_AccessObjekt(tokens:AccessObjekt):
     premium_users = mail_tabelle.select(
         columns=["user_id"],

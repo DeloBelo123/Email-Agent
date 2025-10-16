@@ -43,6 +43,12 @@ export function PushNotificationManager() {
             // VAPID Public Key (sollte aus Environment kommen)
             const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_KEY || 'your_vapid_public_key_here'
             
+            // Prüfe ob VAPID Key gültig ist
+            if (vapidPublicKey === 'your_vapid_public_key_here') {
+                console.log('⚠️ VAPID Key nicht konfiguriert - Push Notifications deaktiviert')
+                return
+            }
+            
             // Push Subscription erstellen
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,

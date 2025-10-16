@@ -82,6 +82,7 @@ def auto_send(req:Req):
             args = [req, email.from_, email.to, email.subject, email.content],
             countdown = 1200  # 20 Minuten Delay
         )
+        add_to_file("offlineLoggs.txt",f"-would have send a mail (from auto-send) to: {email}")
         redis.sadd(f"pending_auto_responses:{req.user.id}",respo.id)
         print(f"die Respo von 'send_mail' von 'auto_send': {respo}")
         return {"status": 202, "message": "Auto-response scheduled", "task_id": respo.id}

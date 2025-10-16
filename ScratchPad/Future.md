@@ -12,12 +12,12 @@
 # für Email-Saas
 
 - baue CRM integration ein <kinda>
-- baue beim email-writer ein datein drag und drop rein !!!
+- baue beim email-writer ein datein drag und drop rein !!! 
 - baue auch auto respo beim email-writer ein
 - baue ein feature ein das bei der CRM von den Emails her auch automatisch die Termine gebucht werden. <hab>
 
 - baue bei landingpage so eine "how to connect with CRM" oder so an, motto eigene docs wo du das erklärst
-- baue auch in settings von der Web-APP dieses "connect to CRM", so button oder so, wo du halt auch zu den docs geschickt wirst
+- baue auch in settings von der Web-APP dieses "connect to CRM", so button oder so, wo du halt auch zu den docs geschickt wirst <hab>
 - mache das mit den docs am besten mit dieser sprachen module von react, das das in jede sprache übersetzt, oder zumindest deutsch und englisch
 
 

@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import NotLoggedInScreen from "../../components/auth/NotLoggedInScreen"
 import { makeDummyMails } from "./DummyData"
 
-export function Mails({category,dummyTest = true}:{category: MailCategories, dummyTest?: boolean}){
+export function Mails({category,dummyTest = false}:{category: MailCategories, dummyTest?: boolean}){
     const [mails, setMails] = useState<any | undefined>()
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
@@ -32,7 +32,7 @@ export function Mails({category,dummyTest = true}:{category: MailCategories, dum
     const { mutate, error:postError } = useMutation({
         mutationFn: async () => {
             return await sendSession<PythonResponse>({
-                toBackend:"http://localhost:8000/read_emails/test3/version3",
+                toBackend:"http://localhost:8000/read_emails/test3",
             })
         },  
         onSuccess: async (result) => {

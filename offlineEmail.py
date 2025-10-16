@@ -3,7 +3,6 @@ from dataModels import AccessObjekt
 from pb.supabase_tables import user_tabelle
 from readEmail import redis,celery
 
-
 router = APIRouter()
 
 @router.post("/handle_user_status/test3")
