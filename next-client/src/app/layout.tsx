@@ -1,4 +1,5 @@
 import { OnlineStatusManager } from "./StatusManager";
+import { PushNotificationManager } from "../components/PushNotificationManager";
 import type { Metadata } from "next";
 import "./globals.css";
 import { CategorieContextProvider } from "./readMails/CategorieContext";
@@ -20,6 +21,7 @@ export default function RootLayout({children}: Readonly<{children: React.ReactNo
           <CategorieContextProvider>
             <ReplyProvider>
               <OnlineStatusManager />
+              <PushNotificationManager />
               {children}
               <SettingsButton />
             </ReplyProvider>

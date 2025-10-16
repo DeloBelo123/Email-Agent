@@ -2,14 +2,13 @@
 from pb.agent_modules.my_agents import *
 from pb.agent_modules.langchain_imports import *
 from pb.agent_modules.fastapi_config import *
-from pb.tools.file_functions import read_file
-from pb.CRM.OnOffice.config import CalendarEntryParameters,update_calendar_tool
 from pb.supabase_tables import mail_tabelle,user_tabelle
 from dataModels import AccessObjekt, OutPutSchema, SubscriptionTier
 from projektAgents import termin_planer,email_writer
 from celery import Celery
 from redis import Redis
 import crontab
+from serviceWorker import send_lead_notification
 
 router = APIRouter()
 redis = Redis(host='localhost', port=6379, db=0) #WICHTIG: merk dir korrekte server konfig damit über restarts hinweg data bleibt
@@ -211,8 +210,6 @@ def get_mail_ids(access_object: AccessObjekt, max_results: int = 20) -> list[str
 
 @celery.task  
 def AI_mail_updating(tokens: AccessObjekt):
-    user_id = tokens.user.id
-
     mail_tabelle_ids = mail_tabelle.select(columns=["unique_mail_id"])
     real_mail_tabelle_ids = [row["unique_mail_id"] for row in mail_tabelle_ids]
     all_mail_ids = get_mail_ids(tokens,max_results=18)
