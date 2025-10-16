@@ -256,12 +256,21 @@ def AI_mail_updating(tokens: AccessObjekt):
                                 raise OneCallAgentError("Error! Terminplaner hat die aufgabe aus irgendeinem Grund nicht erledigt, Debuge für nähere info bro")
                         
                         if email["email_owner_id"] in premium_users_id and email["mail_category"] == "neue_interessenten":
+                            send = send_lead_notification(
+                                user_id=email["email_owner_id"],
+                                lead_name=email["mail_header"]["from_"],
+                                email_id=email["email_id"],
+                                url="https://localhost:3000/readMails" # ist eig nur dummy data
+                            )
+                            if not send:
+                                raise Exception("Ein Error beim push-notification senden, Pushnotification konnte nicht gesendet werden")
+                            
                             # Online-Status checken
-                            result = user_tabelle.select(
+                            OnOff_arr = user_tabelle.select(
                                 columns=["OnOff"],
                                 where=[{"column":"user_id","is_":email["email_owner_id"]}]
                             )
-                            user_onoff_status = result[0]["OnOff"] if result and len(result) > 0 else "off"
+                            user_onoff_status = OnOff_arr[0]["OnOff"] if OnOff_arr and len(OnOff_arr) > 0 else "off"
                             
                             if user_onoff_status == "on":
                                 logging.info(f"User {email['email_owner_id']} ONLINE - skip Auto-Response")

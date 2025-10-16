@@ -206,18 +206,18 @@ def send_notification(
 # 🎯 VORFERTIGE NOTIFICATION FUNKTIONEN
 # ============================================================================
 
-def send_lead_notification(user_id: str, lead_name: str, email_id: str) -> bool:
+def send_lead_notification(user_id: str, lead_name: str, email_id: str, url:str, ) -> bool:
     """Sends a push notification for a new lead."""
     return send_notification(
         user_id=user_id,
-        title="🔥 Neuer Lead!",
+        title="potenzieller Lead!",
         body=f"{lead_name} hat dir geschrieben",
-        icon="/icon-192x192.png",
-        badge="/badge-72x72.png",
+        icon="/icon-192x192.png", # muss hier noch passende icon finden
+        badge="/badge-72x72.png", # muss hier noch passende icon finden
         tag=f"lead-{email_id}",
         require_interaction=True,
         data={"email_id": email_id, "type": "lead"},
-        url="/readMails"
+        url=url
     )
 
 def send_appointment_notification(user_id: str, appointment_details: str, email_id: str) -> bool:
