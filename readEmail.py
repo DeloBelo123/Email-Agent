@@ -8,8 +8,7 @@ from dataModels import AccessObjekt, OutPutSchema, SubscriptionTier
 from projektAgents import termin_planer,email_writer
 from celery import Celery
 from redis import Redis
-
-from serviceWorker import send_lead_notification
+from pywebpush import webpush, WebPushException
 
 router = APIRouter()
 redis = Redis(host='localhost', port=6379, db=0) #WICHTIG: merk dir korrekte server konfig damit über restarts hinweg data bleibt
@@ -257,15 +256,25 @@ def AI_mail_updating(tokens: AccessObjekt):
                                 raise OneCallAgentError("Error! Terminplaner hat die aufgabe aus irgendeinem Grund nicht erledigt, Debuge für nähere info bro")
                         
                         if email["email_owner_id"] in premium_users_id and email["mail_category"] == "neue_interessenten":
-                            send = send_lead_notification(
-                                user_id=email["email_owner_id"],
-                                lead_name=email["mail_header"]["from_"],
-                                email_id=email["email_id"],
-                                url="https://localhost:3000/readMails" # ist eig nur dummy data
+                            #webpush notification senden
+                            subscibtion_arr = user_tabelle.select(
+                                columns=["subscription"],
+                                where=[{"column":"user_id","is_":email["email_owner_id"]}]
                             )
-                            if not send:
-                                raise Exception("Ein Error beim push-notification senden, Pushnotification konnte nicht gesendet werden")
-                            
+                            user_subscription = subscibtion_arr[0]["subscription"] if subscibtion_arr and len(subscibtion_arr) > 0 else None
+                            if user_subscription:
+                                try:
+                                    webpush(
+                                        subscription_info=json.loads(user_subscription),
+                                        data=json.dumps({
+                                            "title": "Neuer Lead",
+                                            "body": f"{email['mail_header']['from_']} hat ihnen geschrieben: {email['summary']}"
+                                        }),
+                                        vapid_private_key=os.getenv("SECRET_VAPID_KEY")
+                                    )
+                                except WebPushException as e:
+                                    logging.error(f"WebPush Error: {e}")
+                                    continue
                             # Online-Status checken
                             OnOff_arr = user_tabelle.select(
                                 columns=["OnOff"],
@@ -290,7 +299,8 @@ def AI_mail_updating(tokens: AccessObjekt):
                             
                             if user_onoff_status == "on":
                                 continue
-                            else:    
+                            else:
+                                #auto-response ans backend schicken damit es in der queue landet    
                                 auto_generated_email = email_writer.invoke({
                                     "input":f"generiere eine professionelle Antwort zu dieser Mail eines potenziellen Kundens:{[important_mail_body,email["mail_header"]]}"
                                 })

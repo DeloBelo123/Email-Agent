@@ -93,6 +93,22 @@ export class SupabaseTable<T> {
         }
         return data;
     }
+    /**
+     * @param where - die Filter die genau sagen welche Zeile upserted werden soll, sonst wird jede Zeile upserted!!!
+     * @param upsert - die Daten die du upserten möchtest, als Objekt wo der key der Spaltenname ist und der value der neue Wert
+     * @returns die upserteten Zeilen, also die Zeilen die du upsertet hast
+     */
+    async upsert({where,upsert}:{ where:Array<{column:keyof T,is:string | number | boolean | Date | null | undefined}>, upsert:Partial<T> }){
+        let query = supabase.from(this.tableName).upsert(upsert)
+        for ( const {column,is} of where){
+            query = query.eq(column as string,is)
+        }
+        const { data, error } = await query
+        if (error) {
+            throw new Error(`Error upserting data in ${this.tableName}: ${error.message}`);
+        }
+        return data;
+    }
 }
 
 //supabase-auth stuff
