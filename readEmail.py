@@ -217,7 +217,7 @@ def AI_mail_updating(tokens: AccessObjekt):
     logging.warning(f"die neusten mail ids: {newest_mail_ids}")
     logging.error(tokens)
     
-    premium_users = mail_tabelle.select(
+    premium_users = user_tabelle.select(
         columns=["user_id"],
         where=[{"column":"Abo","is_":SubscriptionTier.PREMIUM.value}]
     )
@@ -352,7 +352,7 @@ def AI_mail_updating(tokens: AccessObjekt):
 
 @celery.task
 def process_offline_users():
-    premium_users = mail_tabelle.select(
+    premium_users = user_tabelle.select(
         columns=["user_id"],
         where=[{"column":"Abo","is_":SubscriptionTier.PREMIUM.value}]
     )
@@ -367,9 +367,9 @@ def process_offline_users():
 
 @router.post("/read_emails/test3")
 def get_front_ends_AccessObjekt(tokens:AccessObjekt):
-    premium_users = mail_tabelle.select(
+    premium_users = user_tabelle.select(
         columns=["user_id"],
-        where=[{"column":"Abo","is":SubscriptionTier.PREMIUM.value}]
+        where=[{"column":"Abo","is_":SubscriptionTier.PREMIUM.value}]
     )
     for premium_user in premium_users:
         if tokens.user.id == premium_user["user_id"]:

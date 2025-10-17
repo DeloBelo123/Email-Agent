@@ -81,7 +81,7 @@ class ColumnNotFound(DB_Error):
     ''' Error wenn ein eingegebener col nicht gefunden wird '''
     ...
     
-class EmptyDBResponse(DB_Error,NoneResponse):
+class EmptyDBResponse(DB_Error):
     ''' wenn ein return einer DB leer ist '''
     ...
     

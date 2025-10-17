@@ -47,7 +47,7 @@ class SupabaseTable(Generic[T]):
             query = query.limit(limited_to)
         response = query.execute()
         if not response.data:
-            raise EmptyDBResponse(f"Error selecting data: No data found {response.data}")
+            logging.warning(f"warning selecting data: No data found {response.data}")
         logging.info(f"Selected data from {self.table_name} with columns {columns}")
         return response.data
 

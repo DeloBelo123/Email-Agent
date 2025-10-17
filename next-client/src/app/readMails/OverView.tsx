@@ -31,7 +31,7 @@ export default function OverView(){
     const { mutate, error:postError } = useMutation({
         mutationFn: async () => {
             return await sendSession<PythonResponse>({
-                toBackend:"http://localhost:8000/read_emails/test3/version3",
+                toBackend:"http://localhost:8000/read_emails/test3",
                 extraData:{}
             })
         },  

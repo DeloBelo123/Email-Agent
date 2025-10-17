@@ -42,7 +42,7 @@ commit:
 
 - git reset <code>
 -> wenn du verkackt hast bringt er dich zurück zum zustand des commites mit dem gegebenen code den du von git log --oneline bekommst (in gelb)
--> VORSICHT: in den neuen commits kommt man nur schwer, nutze hier also lieber branches!!!
+-> VORSICHT: in den neuen commits kommt man dann nur schwer, nutze hier also lieber branches!!!
 
 * brachnes
 
